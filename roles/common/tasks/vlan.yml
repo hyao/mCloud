@@ -1,0 +1,11 @@
+---
+
+# create an vlan interface as openstack management ip
+
+- name: create vlan
+  command: ip link add link eth0 name eth0.2 type vlan id 2
+
+- name: set up vlan ip address
+  command: ip addr add 192.168.100.2/24 brd 192.168.2.255 dev eth0.2
+
+- name: ip link set dev eth0.2 up

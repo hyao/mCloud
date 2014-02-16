@@ -1,0 +1,26 @@
+---
+
+- name: install keystone
+  apt: pkg=keystone state=latest
+
+- name: edit /etc/keystone/keystone.conf
+  lineinfile: dest=/etc/keystone/keystone.conf
+              regexp='^connection = sqlite:////var/lib/keystone/keystone.db'
+              line='connection = mysql://keystone:{{ os_mysql_password }}@{{ os_manage_ip }}/keystone'
+              backrefs=yes
+  notify:
+    - restart keystone
+
+- name: rm /var/lib/keystone/keystone.db
+  command: rm -rf /var/lib/keystone/keystone.db
+
+- name: keystone-manage db_sync
+  command: keystone-manage db_sync
+
+#- name: create tenants
+#  keystone_user: login_password={{ os_mysql_password }} 
+#                 tenant={{ item }} state=present
+#  with_items:
+#    - admin
+#    - service
+  

@@ -14,11 +14,11 @@
 
 - name: create mysql users
   mysql_user: name={{ item }} priv={{ item }}.*:ALL 
-              password={{ mysql_db_password }} state=present
+              password={{ os_mysql_password }} state=present
   with_items: mcloud_services
 
 - name: create mysql users for host '%'
   mysql_user: name={{ item }} priv={{ item }}.*:ALL host='%'
-              password={{ mysql_db_password }} state=present
+              password={{ os_mysql_password }} state=present
   with_items: mcloud_services
 
