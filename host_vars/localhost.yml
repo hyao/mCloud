@@ -1,0 +1,8 @@
+---
+
+mcloud_services:
+  - keystone
+  - glance
+  - neutron
+  - nova
+  - cinder

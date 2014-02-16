@@ -1,0 +1,9 @@
+---
+
+- name: deploy to server
+  hosts: localhost
+  sudo: true
+
+  roles:
+    #- common
+    - mysql

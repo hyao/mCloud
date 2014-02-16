@@ -1,0 +1,19 @@
+---
+
+#- name: add havana cloud archive
+#  command: add-apt-repository cloud-archive:havana
+
+#- name: update apt cache
+#  apt: update_cache=yes
+
+- name: install common packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - mysql-server 
+    - python-mysqldb 
+    - rabbitmq-server 
+    - ntp
+
+- name: make mysql listen on all interfaces
+  lineinfile: dest=/etc/mysql/my.cnf
+              regexp='^bind-address= 127.0.0.1' line='127.0.0.1 localhost'

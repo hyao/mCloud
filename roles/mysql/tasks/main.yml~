@@ -1,0 +1,30 @@
+---
+
+- name: make mysql listen on all interfaces
+  lineinfile: dest=/etc/mysql/my.cnf
+              regexp='^bind-address\s+= 127.0.0.1' 
+              line='bind-address = 0.0.0.0'
+              backrefs=yes
+  notify:
+    - restart mysql
+
+- name: create mysql dbs
+  mysql_db: name={{ item }} state=present
+  with_items:
+    - keystone
+    - glance
+    - neutron
+    - nova
+    - cinder
+
+- name: create mysql users
+  mysql_user: name={{ item }} priv={{ item }}.*:ALL 
+              password={{ mysql_db_password }} state=present
+  with_items:
+    - keystone
+    - glance
+    - neutron
+    - nova
+    - cinder
+
+
