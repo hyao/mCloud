@@ -1,0 +1,37 @@
+---
+
+- name: install glance
+  apt: pkg=glance state=latest
+
+- name: backup glance conf files
+  command: chdir=/etc/glance creates={{ item }}.orig
+           mv {{ item }} {{ item }}.orig
+  with_items:
+    - glance-api.conf
+    - glance-registry.conf
+    - glance-api-paste.ini
+    - glance-registry-paste.ini
+
+- name: copy glance config templates
+  template: src={{ item }}.j2 dest=/etc/glance/{{ item }}
+            owner=glance group=glance mode=0644
+  with_items:
+    - glance-api.conf
+    - glance-registry.conf
+    - glance-api-paste.ini
+    - glance-registry-paste.ini
+
+- name: rm /var/lib/glance/glance.sqlite
+  command: rm -rf /var/lib/glance/glance.sqlite
+
+- name: restart glance api and registry
+  service: name={{ item }} state=restarted
+  with_items:
+    - glance-api
+    - glance-registry
+
+- name: glance-manage db_sync
+  command: glance-manage db_sync
+  notify:
+    - restart glance-registry
+    - restart glance-api

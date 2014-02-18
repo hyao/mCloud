@@ -7,6 +7,7 @@
     - vars/main.yml
 
   roles:
-    - common
-    - mysql
-    - keystone
+    #- common
+    #- mysql
+    #- keystone
+    - glance
