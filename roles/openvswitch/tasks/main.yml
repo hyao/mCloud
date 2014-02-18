@@ -1,0 +1,31 @@
+---
+
+- name: install openvswitch packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - openvswitch-controller
+    - openvswitch-switch
+    - openvswitch-datapath-dkms
+
+- name: add bridges br-int for openstack management and br-ext for internet 
+  command: ovs-vsctl add-br {{ item }}
+  with_items:
+    - br-int
+    - br-ext
+
+- name: backup original network interfaces file
+  command: chdir=/etc/network creates=interfaces.orig
+           cp interfaces interfaces.orig
+
+- name: copy new interfaces file
+  copy: src=interfaces dest=/etc/network/interfaces
+        owner=root group=root mode=0644
+
+- name: add eth0 to br-ext
+  command: ovs-vsctl add-port br-ext eth0
+
+- name: restart networking
+  service: name=networking state=restarted
+
+ 
+        
