@@ -1,0 +1,55 @@
+---
+
+- name: install neutron packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - neutron-server 
+    - neutron-plugin-openvswitch 
+    - neutron-plugin-openvswitch-agent 
+    - dnsmasq 
+    - neutron-dhcp-agent 
+    - neutron-l3-agent 
+    - neutron-metadata-agent
+
+- name: stop neutron-server
+  service: name=neutron-server state=stopped
+
+- name: backup neutron conffiles
+  command: chdir=/etc/neutron creates={{ item }}.orig
+           cp {{ item }} {{ item }}.orig
+  with_items:
+    - neutron.conf
+    - api-paste.ini
+    - metadata_agent.ini
+    - l3_agent.ini
+    - dhcp_agent.ini
+
+- name: backup /etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+  command: chdir=/etc/neutron/plugins/openvswitch creates=ovs_neutron_plugin.ini.orig
+           cp ovs_neutron_plugin.ini ovs_neutron_plugin.ini.orig
+
+- name: copy neutron templates to /etc/neutron
+  template: src={{ item }}.j2 dest=/etc/neutron/{{ item }}
+            owner=root group=neutron mode=0644
+  with_items:
+    - neutron.conf
+    - api-paste.ini
+    - metadata_agent.ini
+    - l3_agent.ini
+    - dhcp_agent.ini
+
+- name: copy ovs_neutron_plugin.ini 
+  template: src=ovs_neutron_plugin.ini.j2 dest=/etc/neutron/plugins/openvswitch/ovs_neutron_plugin.ini
+            owner=root group=neutron mode=0644
+
+- name: rm /var/lib/neutron/neutron.sqlite
+  command: rm -rf /var/lib/neutron/neutron.sqlite
+
+#- name: start neutron services
+  #service: name={{ item }} state=restarted
+  #with_items:
+    #- 
+
+- name: restart dnsmasq
+  service: name=dnsmasq state=restarted
+
