@@ -1,0 +1,51 @@
+---
+
+- name: install nova packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - nova-api 
+    - nova-cert 
+    - novnc 
+    - nova-consoleauth 
+    - nova-scheduler 
+    - nova-novncproxy 
+    - nova-doc 
+    - nova-conductor 
+    - nova-compute-kvm
+
+- name: backup nova conffiles
+  command: chdir=/etc/nova creates={{ item }}.orig
+           copy {{ item }} {{ item }}.orig
+  with_items:
+    - nova.conf
+    - nova-compute.conf
+    - api-paste.ini
+
+- name: copy nova conffiles
+  template: src={{ item }}.j2 dest={{ item }}
+            owner=nova group=nova mode=0644
+  with_items:
+    - nova.conf
+    - nova-compute.conf
+    - api-paste.ini
+
+- name: restart nova services
+  service: name={{ item }} state=restarted
+  with_items:
+    - nova-api
+    - nova-cert
+    - nova-conductor
+    - nova-consoleauth
+    - nova-novncproxy
+    - nova-scheduler
+    - nova-compute
+
+- name: rm /var/lib/nova/nova.sqlite
+  command: rm -rf /var/lib/nova/nova.sqlite
+
+- name: nova-manage db sync
+  command: nova-manage db sync
+
+
+
+

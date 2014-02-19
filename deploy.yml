@@ -12,4 +12,7 @@
     #- keystone
     #- glance
     #- openvswitch
-    - neutron
+    #- neutron
+    #- cinder
+    #- nova
+    - horizon

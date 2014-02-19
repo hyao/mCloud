@@ -1,0 +1,13 @@
+---
+
+- name: install horizon packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - openstack-dashboard 
+    - memcached
+
+- name: restart apache2 and memcached
+  service: name={{ item }} state=restarted
+  with_items:
+    - apache2
+    - memcached

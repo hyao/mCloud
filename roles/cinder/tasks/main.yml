@@ -1,0 +1,38 @@
+---
+
+- name: install cinder packages
+  apt: pkg={{ item }} state=latest
+  with_items:
+    - cinder-api
+    - cinder-scheduler
+    - cinder-volume
+
+- name: backup cinder conffiles 
+  command: chdir=/etc/cinder creates={{ item }}.orig
+           cp {{ item }} {{ item }}.orig
+  with_items:
+    - cinder.conf
+    - api-paste.ini
+
+- name: copy cinder conffiles
+  template: src={{ item }}.j2 dest=/etc/cinder/{{ item }}
+        owner=cinder group=cinder mode=0644
+  with_items:
+    - cinder.conf
+    - api-paste.ini
+
+- name: rm /var/lib/cinder/cinder.sqlite
+  command: rm -rf /var/lib/cinder/cinder.sqlite
+
+- name: cinder-manage db sync
+  command: cinder-manage db sync
+
+- name: restart tgt
+  service: name=tgt state=restarted
+  
+- name: restart cinder services
+  service: name={{ item }} state=restarted
+  with_items:
+    - cinder-api
+    - cinder-scheduler
+    - cinder-volume
